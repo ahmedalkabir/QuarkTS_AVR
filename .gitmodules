@@ -1,0 +1,3 @@
+[submodule "QuarkTS"]
+	path = QuarkTS
+	url = git@github.com:kmilo17pet/QuarkTS.git
