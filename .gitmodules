@@ -1,3 +1,6 @@
 [submodule "QuarkTS"]
 	path = QuarkTS
 	url = git@github.com:kmilo17pet/QuarkTS.git
+[submodule "tau_hal"]
+	path = tau_hal
+	url = git@github.com:ahmedalkabir/tau_hal.git
