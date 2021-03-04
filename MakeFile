@@ -12,6 +12,7 @@ tau_hal_LOC = tau_hal
 
 QuarkTS_INC = $(QuarkTS_LOC)/src/os/include
 tau_hal_INC = $(tau_hal_LOC)/include
+QuarkTS_AVR_INC = include
 
 
 tau_hal_SRC =  $(wildcard $(tau_hal_LOC)/src/*.c)
@@ -19,6 +20,9 @@ tau_hal_OBJS = $(patsubst %.c, %.o, $(tau_hal_SRC))
 
 QuarkTS_SRC = $(wildcard $(QuarkTS_LOC)/src/os/*.c)
 QuarkTS_OBJS = $(patsubst %.c, %.o, $(QuarkTS_SRC))
+
+QuarkTS_AVR_SRC = $(wildcard src/*.c)
+QuarkTS_AVR_OBJS = $(patsubst %.c, %.o, $(QuarkTS_AVR_SRC))
 
 tau_hal_LIB = lib_tau.a
 QuarkTS_LIB = lib_quarkts.a
@@ -33,14 +37,17 @@ $(tau_hal_LOC)/src/%.o:  $(tau_hal_LOC)/src/%.c
 $(QuarkTS_LOC)/src/os/%.o:  $(QuarkTS_LOC)/src/os/%.c
 	$(CC) $(CFLAGS) -c -I./$(QuarkTS_INC) -I./$(QuarkTS_LOC)/src/config $^ -o $@
 
+src/%.o: src/%.c
+	$(CC) $(CFLAGS) -c -I./$(QuarkTS_AVR_INC) -I./$(tau_hal_INC) -I./$(QuarkTS_INC) -I./$(QuarkTS_LOC)/src/config $^ -o $@
+
 $(tau_hal_LIB): $(tau_hal_OBJS)
 	$(AR) -$(ARFLGS) $@ $?
 
 $(QuarkTS_LIB): $(QuarkTS_OBJS)
 	$(AR) -$(ARFLGS) $@ $?
 
-build: $(QuarkTS_LIB) $(tau_hal_LIB)
-	$(CC) $(CFLAGS)  -I./$(tau_hal_INC) -I./$(QuarkTS_INC) -I./$(QuarkTS_LOC)/src/config main.c $(tau_hal_LIB) $(QuarkTS_LIB) -o $(ELF)
+build: $(QuarkTS_LIB) $(tau_hal_LIB) $(QuarkTS_AVR_OBJS)
+	$(CC) $(CFLAGS)  -I./$(tau_hal_INC) -I./$(QuarkTS_INC) -I./$(QuarkTS_LOC)/src/config -I./$(QuarkTS_AVR_INC) main.c $(QuarkTS_AVR_OBJS) $(tau_hal_LIB) $(QuarkTS_LIB) -o $(ELF)
 	avr-objcopy -O ihex -R .eeprom $(ELF) $(HEX)
 	avr-size -C --mcu=$(MCU) $(ELF)
 
