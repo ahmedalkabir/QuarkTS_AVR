@@ -1,0 +1,38 @@
+CC= avr-gcc
+CXX= avr-g++
+AR= avr-gcc-ar
+ARFLGS= rcs
+MCU ?= atmega328p
+FREQ ?= 16000000
+COM ?= COM10
+CFLAGS += -mmcu=$(MCU) -DF_CPU=$(FREQ) -Wall -Wextra -g -Os -Wall -Wextra -std=gnu11 -ffunction-sections -fdata-sections -MMD -flto -fno-fat-lto-objects
+
+QuarkTS_LOC = QuarkTS
+tau_hal_LOC = tau_hal
+
+QuarkTS_INC = $(QuarkTS_LOC)/src/include
+tau_hal_INC = $(tau_hal_LOC)/include
+
+
+tau_hal_SRC =  $(wildcard $(tau_hal_LOC)/src/*.c)
+tau_hal_OBJS = $(patsubst %.c, %.o, $(tau_hal_SRC))
+tau_hal_LIB = lib_tau.a
+
+target = quark_ts
+ELF = $(addsuffix .elf, $(target))
+HEX = $(addsuffix .hex, $(ELF))
+
+$(tau_hal_LOC)/src/%.o:  $(tau_hal_LOC)/src/%.c
+	$(CC) $(CFLAGS) -c -I./$(tau_hal_INC) $^ -o $@
+
+$(tau_hal_LIB): $(tau_hal_OBJS)
+	$(AR) -$(ARFLGS) $@ $?
+
+build: $(tau_hal_LIB) 
+	$(CC) $(CFLAGS)  -I./$(tau_hal_INC)  main.c $(tau_hal_LIB) -o $(ELF)
+	avr-objcopy -O ihex -R .eeprom $(ELF) $(HEX)
+	avr-size -C --mcu=$(MCU) $(ELF)
+
+# clean:
+
+all: build
