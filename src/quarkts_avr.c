@@ -16,6 +16,7 @@ void quarkts_avr_init()
     sei();
 
     qOS_Setup(NULL, TIMER_TICK, NULL);
+    qCritical_SetInterruptsED(enable_interrupt, disable_interrupt);
 
     static FILE m_stdout = FDEV_SETUP_STREAM(uart_printf, NULL, _FDEV_SETUP_WRITE);
 
@@ -31,4 +32,17 @@ int uart_printf(char data, FILE *stream){
 ISR(TIMER0_COMPA_vect)
 {
     qClock_SysTick();
+}
+
+qUINT32_t disable_interrupt(){
+    // save current context
+    qUINT32_t current_status = (qUINT32_t)(SREG);
+    cli(); // disable interrupt
+
+    return current_status;
+}
+
+void enable_interrupt(qUINT32_t reg){
+    SREG = (qUINT8_t)(reg & 0xFF);
+    sei();// enable interrupt
 }
